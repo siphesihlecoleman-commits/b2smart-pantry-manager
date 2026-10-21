@@ -11,11 +11,12 @@ import java.util.List;
 
 /**
  * Creates and manages the local SQLite database for Smart Pantry Manager.
+ * Tables: pantry_items, recipes, recipe_ingredients.
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "pantry.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // Table: pantry_items
     public static final String TABLE_PANTRY = "pantry_items";
@@ -24,6 +25,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_QUANTITY = "quantity";
     public static final String COL_UNIT = "unit";
     public static final String COL_EXPIRY = "expiry_date";
+
+    // Table: recipes
+    public static final String TABLE_RECIPES = "recipes";
+    public static final String COL_STEPS = "steps";
+
+    // Table: recipe_ingredients
+    public static final String TABLE_RECIPE_ING = "recipe_ingredients";
+    public static final String COL_RECIPE_ID = "recipe_id";
+    public static final String COL_ING_NAME = "ingredient_name";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -39,13 +49,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_UNIT + " TEXT NOT NULL, "
                 + COL_EXPIRY + " TEXT)";
         db.execSQL(createPantry);
+        createRecipeTables(db);
     }
 
-    // Runs when DATABASE_VERSION is increased
+    // Runs when DATABASE_VERSION goes up: add the recipe tables, keep pantry data
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PANTRY);
-        onCreate(db);
+        if (oldVersion < 2) {
+            createRecipeTables(db);
+        }
+    }
+
+    // Creates the two tables used for recipes
+    private void createRecipeTables(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE " + TABLE_RECIPES + " ("
+                + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_NAME + " TEXT NOT NULL, "
+                + COL_STEPS + " TEXT NOT NULL)");
+
+        db.execSQL("CREATE TABLE " + TABLE_RECIPE_ING + " ("
+                + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_RECIPE_ID + " INTEGER NOT NULL, "
+                + COL_ING_NAME + " TEXT NOT NULL, "
+                + COL_QUANTITY + " REAL NOT NULL, "
+                + COL_UNIT + " TEXT NOT NULL, "
+                + "FOREIGN KEY(" + COL_RECIPE_ID + ") REFERENCES "
+                + TABLE_RECIPES + "(" + COL_ID + "))");
     }
 
     // CREATE: insert a new pantry item, returns the new row id
@@ -59,7 +88,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(TABLE_PANTRY, null, values);
     }
 
-    // TODO: getAllItems()  (READ)
     // READ: get every pantry item from the database
     public List<PantryItem> getAllItems() {
         List<PantryItem> items = new ArrayList<>();
@@ -78,7 +106,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return items;
     }
-    // TODO: updateItem()  (UPDATE)
+
     // UPDATE: change an existing pantry item (found by its id)
     public int updateItem(PantryItem item) {
         SQLiteDatabase db = getWritableDatabase();
@@ -90,7 +118,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.update(TABLE_PANTRY, values, COL_ID + "=?",
                 new String[]{String.valueOf(item.getId())});
     }
-    // TODO: deleteItem()  (DELETE)
+
     // DELETE: remove a pantry item by its id
     public int deleteItem(int id) {
         SQLiteDatabase db = getWritableDatabase();
