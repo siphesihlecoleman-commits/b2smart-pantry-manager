@@ -1,9 +1,9 @@
 package com.siphesihle.smartpantrymanager;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -47,11 +47,19 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up the RecyclerView with our adapter
         adapter = new PantryAdapter(dbHelper.getAllItems(), new PantryAdapter.OnItemClickListener() {
+            // Tap a row: open the Add/Edit screen with that item's data
             @Override
             public void onItemClick(PantryItem item) {
-                Toast.makeText(MainActivity.this, "Edit: " + item.getName(), Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, AddEditItemActivity.class);
+                intent.putExtra(AddEditItemActivity.EXTRA_ID, item.getId());
+                intent.putExtra(AddEditItemActivity.EXTRA_NAME, item.getName());
+                intent.putExtra(AddEditItemActivity.EXTRA_QUANTITY, item.getQuantity());
+                intent.putExtra(AddEditItemActivity.EXTRA_UNIT, item.getUnit());
+                intent.putExtra(AddEditItemActivity.EXTRA_EXPIRY, item.getExpiryDate());
+                startActivity(intent);
             }
 
+            // Long-press a row: delete it
             @Override
             public void onItemLongClick(PantryItem item) {
                 dbHelper.deleteItem(item.getId());
@@ -61,11 +69,9 @@ public class MainActivity extends AppCompatActivity {
         rvPantry.setLayoutManager(new LinearLayoutManager(this));
         rvPantry.setAdapter(adapter);
 
-        // TEMPORARY: the + button adds a test item (will become the Add screen)
-        fabAdd.setOnClickListener(v -> {
-            dbHelper.addItem(new PantryItem("Tomato", 3, "pcs", null));
-            loadItems();
-        });
+        // + button: open the Add/Edit screen in "add" mode
+        fabAdd.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, AddEditItemActivity.class)));
     }
 
     // Reload the list every time the screen comes back into view
