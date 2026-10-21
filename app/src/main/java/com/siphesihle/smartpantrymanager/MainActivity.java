@@ -72,6 +72,10 @@ public class MainActivity extends AppCompatActivity {
         // + button: open the Add/Edit screen in "add" mode
         fabAdd.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, AddEditItemActivity.class)));
+
+        // "What can I cook?" button: open the Suggested Recipes screen
+        findViewById(R.id.btnSuggested).setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, SuggestedRecipesActivity.class)));
     }
 
     // Reload the list every time the screen comes back into view
