@@ -94,6 +94,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // DELETE: remove a pantry item by its id
     public int deleteItem(int id) {
         SQLiteDatabase db = getWritableDatabase();
-        return db.delete(______, ______ + "=?", new String[]{String.valueOf(id)});
+        return db.delete(TABLE_PANTRY, COL_ID + "=?", new String[]{String.valueOf(id)});
     }
 }
