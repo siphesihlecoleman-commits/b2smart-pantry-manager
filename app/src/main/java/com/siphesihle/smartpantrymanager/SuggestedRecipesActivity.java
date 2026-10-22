@@ -38,6 +38,9 @@ public class SuggestedRecipesActivity extends AppCompatActivity {
         rvRecipes = findViewById(R.id.rvRecipes);
         tvNoRecipes = findViewById(R.id.tvNoRecipes);
         rvRecipes.setLayoutManager(new LinearLayoutManager(this));
+
+        // Bottom navigation bar (Pantry / Recipes / Settings)
+        NavHelper.setup(this, R.id.nav_recipes);
     }
 
     // Recalculate every time the screen is shown, so the list follows pantry changes

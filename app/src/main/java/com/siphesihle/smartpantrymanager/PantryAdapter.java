@@ -1,5 +1,6 @@
 package com.siphesihle.smartpantrymanager;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,7 +9,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Connects the list of PantryItem objects to the RecyclerView.
@@ -55,6 +60,14 @@ public class PantryAdapter extends RecyclerView.Adapter<PantryAdapter.PantryView
         String details = item.getQuantity() + " " + item.getUnit();
         if (item.getExpiryDate() != null && !item.getExpiryDate().isEmpty()) {
             details += "  |  Expires: " + item.getExpiryDate();
+
+            // Only flag items if the user switched the setting on
+            boolean alertsOn = holder.itemView.getContext()
+                    .getSharedPreferences(SettingsActivity.PREFS_NAME, Context.MODE_PRIVATE)
+                    .getBoolean(SettingsActivity.KEY_EXPIRY_ALERTS, true);
+            if (alertsOn && isExpiringSoon(item.getExpiryDate())) {
+                details += "  (EXPIRING SOON)";
+            }
         }
         holder.tvDetails.setText(details);
 
@@ -63,6 +76,20 @@ public class PantryAdapter extends RecyclerView.Adapter<PantryAdapter.PantryView
             listener.onItemLongClick(item);
             return true;
         });
+    }
+
+    // True if the date (yyyy-MM-dd) is within 3 days from now, or already past
+    private boolean isExpiringSoon(String expiry) {
+        try {
+            Date date = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(expiry);
+            if (date == null) {
+                return false;
+            }
+            long daysLeft = (date.getTime() - System.currentTimeMillis()) / (1000L * 60 * 60 * 24);
+            return daysLeft <= 3;
+        } catch (ParseException e) {
+            return false;
+        }
     }
 
     // How many rows the list has

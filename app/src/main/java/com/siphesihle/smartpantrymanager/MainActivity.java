@@ -73,9 +73,8 @@ public class MainActivity extends AppCompatActivity {
         fabAdd.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, AddEditItemActivity.class)));
 
-        // "What can I cook?" button: open the Suggested Recipes screen
-        findViewById(R.id.btnSuggested).setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, SuggestedRecipesActivity.class)));
+        // Bottom navigation bar (Pantry / Recipes / Settings)
+        NavHelper.setup(this, R.id.nav_pantry);
     }
 
     // Reload the list every time the screen comes back into view
